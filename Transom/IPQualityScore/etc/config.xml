@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <fraud_protection>
+            <transom_ip_quality_score>
+                <api_enabled>1</api_enabled>
+                <api_end_point>1</api_end_point>
+                <api_access_keys_enabled>1</api_access_keys_enabled>
+                <api_key/>
+            </transom_ip_quality_score>
+        </fraud_protection>
+    </default>
+</config>

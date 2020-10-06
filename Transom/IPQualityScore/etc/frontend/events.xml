@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="customer_register_success">
+        <observer name="transom_ip_quality_score_create_account_event"
+                  instance="Transom\IPQualityScore\Observer\Events\CreateAccountEvent"/>
+    </event>
+    <event name="customer_login">
+        <observer name="transom_ip_quality_score_account_login_event"
+                  instance="Transom\IPQualityScore\Observer\Events\AccountLoginEvent"/>
+    </event>
+    <event name="customer_logout">
+        <observer name="transom_ip_quality_score_account_logout_event"
+                  instance="Transom\IPQualityScore\Observer\Events\AccountLogoutEvent"/>
+    </event>
+</config>

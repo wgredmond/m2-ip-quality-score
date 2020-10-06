@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="fraud_protection">
+            <group id="transom_ip_quality_score" type="text" sortOrder="05" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Transom - IP Quality Score</label>
+                <group id="api_config" translate="label comment" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>API Configuration</label>
+                    <field id="api_enabled" translate="label" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <config_path>fraud_protection/transom_ip_quality_score/api_enabled</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                        <comment><![CDATA[Enable or disable the Transom IP Quality Score inetgration.]]></comment>
+                    </field>
+
+                    <field id="end_point" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Endpoint</label>
+                        <config_path>fraud_protection/transom_ip_quality_score/api_end_point</config_path>
+                        <validate>required-entry</validate>
+                        <comment><![CDATA[IP Quality Score end point.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="api_access_keys_enabled" translate="label" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Manage Access Keys in Admin</label>
+                        <config_path>fraud_protection/transom_ip_quality_score/api_access_keys_enabled</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                        <comment><![CDATA[Manage IP Quality Score access keys in Magento admin.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="key" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Key</label>
+                        <config_path>fraud_protection/transom_ip_quality_score/api_key</config_path>
+                        <comment><![CDATA[IP Quality Scores a`ccess key]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                            <field id="api_access_keys_enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>
+
+
+<!--
+
+  https://devdocs.magento.com/guides/v2.4/ext-best-practices/tutorials/dynamic-row-system-config.html
+
+  https://www.atwix.com/magento-2/dynamic-fields-in-system-configuration/
+
+-->
+
