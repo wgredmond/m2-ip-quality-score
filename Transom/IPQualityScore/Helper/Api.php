@@ -15,7 +15,8 @@ use Psr\Log\LoggerInterface;
 use Transom\IPQualityScore\Model\ConfigSettings;
 
 
-class Api extends \Magento\Framework\App\Helper\AbstractHelper {
+class Api extends \Magento\Framework\App\Helper\AbstractHelper
+{
 
 
     /**
@@ -43,7 +44,8 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->remoteAddress = $remoteAddress;
     }
 
-    public function sendLogin() {
+    public function sendLogin()
+    {
 
         // only process order if this service is enabled
         if (!$this->config->isApiActive()) {
@@ -114,16 +116,60 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         // Decode the result into an array.
         $result = json_decode($json, true);
 
-        if(isset($result['message'])) {
+        if (isset($result['message'])) {
             $this->logger->info('##### message = ' . $result['message']);
         }
 
+        foreach ($result as $key => $value) {
+            if (getType($value) === 'object') {
+                $this->logger->info('##### object type = ' . get_class($value));
+            } else {
+                $this->logger->info('##### data[' . $key . '] (type=' . getType($value) . ') = ' . $value);
+            }
+        }
+
         // Check to see if our query was successful.
-        if(isset($result['success']) && $result['success'] === true){
-            if(isset($result['transaction_details']['risk_score'])) {
-                $score = $result['transaction_details']['risk_score'];
+        if (isset($result['success']) && $result['success'] === true) {
+            if (isset($result['fraud_score']) && $result['fraud_score'] === true) {
+                $score = $result['fraud_score'];
                 $this->logger->info('##### ##### ##### score = ' . $score);
             }
+            // country_code
+            // region
+            // city
+            // ISP
+            // ASN
+            // operating_system
+            // browser
+            // organization
+            if (isset($result['latitude']) && $result['latitude'] === true) {
+                $latitude = $result['latitude'];
+            }
+            if (isset($result['longitude']) && $result['longitude'] === true) {
+                $longitude = $result['longitude'];
+            }
+            // is_crawler
+            // timezone
+            if (isset($result['mobile']) && $result['mobile'] === true) {
+                $mobile = $result['mobile'];
+            }
+            if (isset($result['host']) && $result['host'] === true) {
+                $host = $result['host'];
+            }
+            if (isset($result['proxy']) && $result['proxy'] === true) {
+                $proxy = $result['proxy'];
+            }
+            if (isset($result['vpn']) && $result['vpn'] === true) {
+                $vpn = $result['vpn'];
+            }
+            // tor
+            if (isset($result['active_vpn']) && $result['active_vpn'] === true) {
+                $activeVpn = $result['active_vpn'];
+            }
+            // active_tor
+            // recent_abuse
+            // bot_status
+            // request_id
         }
     }
 }
