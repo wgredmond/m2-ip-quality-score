@@ -132,7 +132,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         if (isset($result['success']) && $result['success'] === true) {
             if (isset($result['fraud_score']) && $result['fraud_score'] === true) {
                 $score = $result['fraud_score'];
-                $this->logger->info('##### ##### ##### score = ' . $score);
+                $this->logger->info('##### ##### score = ' . $score);
             }
             // country_code
             // region
