@@ -9,8 +9,4 @@
         <observer name="transom_ip_quality_score_account_login_event"
                   instance="Transom\IPQualityScore\Observer\Events\AccountLoginEvent"/>
     </event>
-    <event name="customer_logout">
-        <observer name="transom_ip_quality_score_account_logout_event"
-                  instance="Transom\IPQualityScore\Observer\Events\AccountLogoutEvent"/>
-    </event>
 </config>

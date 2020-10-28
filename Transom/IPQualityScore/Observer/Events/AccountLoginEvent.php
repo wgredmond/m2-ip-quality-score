@@ -60,7 +60,6 @@ class AccountLoginEvent implements ObserverInterface
         }
 
         $this->logger->info('##### In Transom IPQualityScore ##### AccountLoginEvent .');
-
-        $this->api->sendLogin();
+        $this->api->sendLogin($observer->getEvent()->getCustomer());
     }
 }

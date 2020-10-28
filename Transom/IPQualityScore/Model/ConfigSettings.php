@@ -40,15 +40,13 @@ class ConfigSettings
     /**
      * IP Quality Score API feature enabled
      *
-     * @param int|null $storeId
      * @return bool
      */
-    public function isApiActive($storeId = null)
+    public function isApiActive()
     {
         $enabled = $this->scopeConfig->isSetFlag(
             'fraud_protection/transom_ip_quality_score/api_enabled',
-            ScopeInterface::SCOPE_STORE,
-            $storeId
+            ScopeInterface::SCOPE_WEBSITE
         );
         return $enabled;
     }
@@ -57,15 +55,13 @@ class ConfigSettings
     /**
      * IP Quality Score API End Point
      *
-     * @param int|null $storeId
      * @return string
      */
-    public function getApiEndPoint($storeId = null)
+    public function getApiEndPoint()
     {
         $apiKey = $this->scopeConfig->getValue(
             'fraud_protection/transom_ip_quality_score/api_end_point',
-            ScopeInterface::SCOPE_STORE,
-            $storeId
+            ScopeInterface::SCOPE_WEBSITE
         );
         return $apiKey;
     }
@@ -74,15 +70,13 @@ class ConfigSettings
     /**
      * Is IP Quality Score - Manage API access keys in admin?
      *
-     * @param int|null $storeId
      * @return bool
      */
-    public function isApiAccessKeysInAdmin($storeId = null)
+    public function isApiAccessKeysInAdmin()
     {
         $enabled = $this->scopeConfig->isSetFlag(
             'fraud_protection/transom_ip_quality_score/api_access_keys_enabled',
-            ScopeInterface::SCOPE_STORE,
-            $storeId
+            ScopeInterface::SCOPE_WEBSITE
         );
         return $enabled;
     }
@@ -91,16 +85,29 @@ class ConfigSettings
     /**
      * IP Quality Score API Key
      *
-     * @param int|null $storeId
      * @return string
      */
-    public function getApiKey($storeId = null)
+    public function getApiKey()
     {
         $iamKey = $this->scopeConfig->getValue(
             'fraud_protection/transom_ip_quality_score/api_key',
-            ScopeInterface::SCOPE_STORE,
-            $storeId
+            ScopeInterface::SCOPE_WEBSITE
         );
         return $iamKey;
+    }
+
+
+    /**
+     * IP Quality Score Plan Type
+     *
+     * @return string
+     */
+    public function getPlanType()
+    {
+        $planType = $this->scopeConfig->getValue(
+            'fraud_protection/transom_ip_quality_score/plan_type',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return $planType;
     }
 }

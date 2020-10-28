@@ -13,10 +13,11 @@ namespace Transom\IPQualityScore\Helper;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Psr\Log\LoggerInterface;
 use Transom\IPQualityScore\Model\ConfigSettings;
+use Transom\IPQualityScore\Model\IpqsApiRequestFactory;
+use Transom\IPQualityScore\Model\ResourceModel\IpqsApiRequest;
 
 
-class Api extends \Magento\Framework\App\Helper\AbstractHelper
-{
+class Api extends \Magento\Framework\App\Helper\AbstractHelper {
 
 
     /**
@@ -30,6 +31,16 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
     protected $config;
 
     /**
+     * @var \Transom\IPQualityScore\Model\IpqsApiRequestFactory
+     */
+    protected $ipqsApiRequestFactory;
+
+    /**
+     * @var \Transom\IPQualityScore\Model\ResourceModel\IpqsApiRequest
+     */
+    protected $ipqsApiRequestResource;
+
+    /**
      * Api constructor.
      *
      * @param LoggerInterface $logger
@@ -37,15 +48,19 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function __construct(LoggerInterface $logger,
                                 ConfigSettings $config,
+                                IpqsApiRequestFactory $ipqsApiRequestFactory,
+                                IpqsApiRequest $ipqsApiRequestResource,
                                 RemoteAddress $remoteAddress)
     {
         $this->logger = $logger;
         $this->config = $config;
+        $this->ipqsApiRequestFactory = $ipqsApiRequestFactory;
+        $this->ipqsApiRequestResource = $ipqsApiRequestResource;
         $this->remoteAddress = $remoteAddress;
     }
 
-    public function sendLogin()
-    {
+    //public function sendLogin(\Magento\Customer\Api\Data\CustomerInterface $customer) {
+    public function sendLogin($customer) {
 
         // only process order if this service is enabled
         if (!$this->config->isApiActive()) {
@@ -53,6 +68,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         $this->logger->info('##### In Transom IPQualityScore ##### Api->sendLogin()');
+        $this->logger->info('##### plan type = ' . $this->config->getPlanType());
 
         // get credentials, call IP quality score
         if ($this->config->isApiAccessKeysInAdmin()) {
@@ -116,7 +132,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         // Decode the result into an array.
         $result = json_decode($json, true);
 
-        if (isset($result['message'])) {
+        if(isset($result['message'])) {
             $this->logger->info('##### message = ' . $result['message']);
         }
 
@@ -124,52 +140,45 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             if (getType($value) === 'object') {
                 $this->logger->info('##### object type = ' . get_class($value));
             } else {
-                $this->logger->info('##### data[' . $key . '] (type=' . getType($value) . ') = ' . $value);
+                $this->logger->info('##### data[' . $key . '] (type=' . getType($value) .  ') = ' . $value);
             }
         }
 
+        $this->logger->info('##### ##### is set? ' . isset($result['success']));
+        $this->logger->info('##### ##### success = ' . $result['success']);
+        $this->logger->info('##### ##### success test ' . (isset($result['success']) && $result['success'] === true) );
+
         // Check to see if our query was successful.
-        if (isset($result['success']) && $result['success'] === true) {
-            if (isset($result['fraud_score']) && $result['fraud_score'] === true) {
-                $score = $result['fraud_score'];
-                $this->logger->info('##### ##### score = ' . $score);
+        if(isset($result['success']) && $result['success'] === true) {
+            $fraudScore = $result['fraud_score'];
+            $this->logger->info('##### ##### ##### fraud score = ' . $fraudScore);
+
+            $this->logger->info('##### ##### ##### customer_id = ' . $customer->getId());
+            $this->logger->info('##### ##### ##### email = ' . $customer->getEmail());
+            $customerId = intval($customer->getId());
+
+            $request = array(
+                'type' => 'login',
+                'customer_id' => $customerId,
+                'email' => $customer->getEmail(),
+                'ip_address' => $ipAddress
+            );
+            $request = array_merge($request, $parameters);
+            $this->logger->info('##### ##### request:');
+            foreach ($request as $key => $value) {
+                $this->logger->info('##### data[' . $key . '] (type=' . getType($value) .  ') = ' . $value);
             }
-            // country_code
-            // region
-            // city
-            // ISP
-            // ASN
-            // operating_system
-            // browser
-            // organization
-            if (isset($result['latitude']) && $result['latitude'] === true) {
-                $latitude = $result['latitude'];
+
+            try {
+                $ipqsInterface = $this->ipqsApiRequestFactory->create();
+                $ipqsInterface->setData('type', 'login');
+                $ipqsInterface->setData('fraud_score', $fraudScore);
+                $ipqsInterface->setData('request', json_encode($request));
+                $ipqsInterface->setData('response', json_encode($result));
+                $this->ipqsApiRequestResource->save($ipqsInterface);
+            } catch (\Exception $e) {
+                $this->logger->info('Exception saving IPQS request: ' . $e->getMessage());
             }
-            if (isset($result['longitude']) && $result['longitude'] === true) {
-                $longitude = $result['longitude'];
-            }
-            // is_crawler
-            // timezone
-            if (isset($result['mobile']) && $result['mobile'] === true) {
-                $mobile = $result['mobile'];
-            }
-            if (isset($result['host']) && $result['host'] === true) {
-                $host = $result['host'];
-            }
-            if (isset($result['proxy']) && $result['proxy'] === true) {
-                $proxy = $result['proxy'];
-            }
-            if (isset($result['vpn']) && $result['vpn'] === true) {
-                $vpn = $result['vpn'];
-            }
-            // tor
-            if (isset($result['active_vpn']) && $result['active_vpn'] === true) {
-                $activeVpn = $result['active_vpn'];
-            }
-            // active_tor
-            // recent_abuse
-            // bot_status
-            // request_id
         }
     }
 }

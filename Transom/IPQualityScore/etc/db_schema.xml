@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+    <table name="ipqs_api_request">
+        <column xsi:type="int" name="ipqs_api_request_id" padding="10" identity="true" unsigned="true" nullable="false" comment="IPQS API Request ID"/>
+        <column xsi:type="varchar" name="type" nullable="false" length="20" comment="Event type"/>
+        <column xsi:type="int" name="fraud_score" unsigned="false" nullable="false" comment="Fraud Score"/>
+        <column xsi:type="text" name="request" nullable="false" comment="Request"/>
+        <column xsi:type="text" name="response" nullable="false" comment="Response"/>
+        <column xsi:type="timestamp" name="updated" nullable="false" on_update="true" default="CURRENT_TIMESTAMP" comment="Updated"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="ipqs_api_request_id"/>
+        </constraint>
+    </table>
+
+
+    <table name="ipqs_order_score">
+        <column xsi:type="int" name="ipqs_order_score_id" padding="10" identity="true" unsigned="true" nullable="false" comment="IPQS Order Score ID"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" comment="Order Id"/>
+        <column xsi:type="int" name="fraud_score" unsigned="false" nullable="false" comment="Fraud Score"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="ipqs_order_score_id"/>
+        </constraint>
+    </table>
+
+</schema>

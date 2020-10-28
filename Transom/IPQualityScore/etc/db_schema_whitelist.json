@@ -1,0 +1,24 @@
+{
+    "ipqs_api_request": {
+        "column": {
+            "ipqs_api_request_id": true,
+            "type": true,
+            "fraud_score": true,
+            "request": true,
+            "response": true,
+            "updated": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "ipqs_score": {
+        "column": {
+            "ipqs_score_id": true,
+            "fraud_score": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}
