@@ -19,6 +19,39 @@ use Transom\IPQualityScore\Model\ResourceModel\IpqsApiRequest;
 
 class Api extends \Magento\Framework\App\Helper\AbstractHelper {
 
+    const IPQS_PARAM_STRICTNESS = 'strictness';
+    const IPQS_PARAM_ALLOW_PUBLIC_ACCESS_PIONTS = 'allow_public_access_points';
+    const IPQS_PARAM_LIGHTER_PENALTIES = 'lighter_penalties';
+    const IPQS_PARAM_FAST = 'fast';
+    const IPQS_PARAM_USER_AGENT = 'user_agent';
+    const IPQS_PARAM_USER_LANGUAGE = 'user_language';
+    const IPQS_PARAM_BILLING_FIRST_NAME = 'billing_first_name';
+    const IPQS_PARAM_BILLING_LAST_NAME = 'billing_last_name';
+    const IPQS_PARAM_BILLING_COUNTRY = 'billing_country';
+    const IPQS_PARAM_BILLING_ADDRESS_1 = 'billing_address_1';
+    const IPQS_PARAM_BILLING_ADDRESS_2 = 'billing_address_2';
+    const IPQS_PARAM_BILLING_CITY = 'billing_city';
+    const IPQS_PARAM_BILLING_STATE = 'billing_state';
+    const IPQS_PARAM_BILLING_ZIPCODE = 'billing_zipcode';
+    const IPQS_PARAM_BILLING_PHONE = 'billing_phone';
+    const IPQS_PARAM_BILLING_EMAIL = 'billing_email';
+    const IPQS_PARAM_SHIPPING_FIRST_NAME = 'shiping_first_name';
+    const IPQS_PARAM_SHIPPING_LAST_NAME = 'shiping_last_name';
+    const IPQS_PARAM_SHIPPING_COUNTRY = 'shiping_country';
+    const IPQS_PARAM_SHIPPING_ADDRESS_1 = 'shiping_address_1';
+    const IPQS_PARAM_SHIPPING_ADDRESS_2 = 'shiping_address_2';
+    const IPQS_PARAM_SHIPPING_CITY = 'shiping_city';
+    const IPQS_PARAM_SHIPPING_STATE = 'shiping_state';
+    const IPQS_PARAM_SHIPPING_ZIPCODE = 'shiping_zipcode';
+    const IPQS_PARAM_SHIPPING_PHONE = 'shiping_phone';
+    const IPQS_PARAM_SHIPPING_EMAIL = 'shiping_email';
+    const IPQS_PARAM_CC_EXP_MONTH = 'credit_card_expiration_month';
+    const IPQS_PARAM_CC_EXP_YEAR = 'credit_card_expiration_year';
+    const IPQS_PARAM_ORDER_AMOUNT = 'order_amount';
+    const IPQS_PARAM_SUCCESS = 'success';
+    const IPQS_PARAM_FRAUD_SCORE = 'fraud_score';
+    const IPQS_PARAM_RISK_SCORE = 'risk_score';
+    const IPQS_PARAM_TRANSACTION_DETAILS = 'transaction_details';
 
     /**
      * @var LoggerInterface
@@ -59,16 +92,174 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->remoteAddress = $remoteAddress;
     }
 
-    //public function sendLogin(\Magento\Customer\Api\Data\CustomerInterface $customer) {
+
+    /**
+     * send login event data to ipqs
+     * @param $customer
+     * @return $this
+     */
     public function sendLogin($customer) {
+        $this->logger->info('##### In Transom IPQualityScore ##### sendTransaction()');
+
+        $ipAddress = $this->remoteAddress->getRemoteAddress();
+        $userAgent = $_SERVER ['HTTP_USER_AGENT'];
+        $userLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+
+        // Set the strictness for this query. (0 (least strict) - 3 (most strict))
+        $strictness = 0;
+
+        // You may want to allow public access points like coffee shops, schools, corporations, etc...
+        $allowPublicAccessPoints = 'true';
+
+        // Reduce scoring penalties for mixed quality IP addresses shared by good and bad users.
+        $lighterPenalties = 'false';
+
+        $parameters = array(
+            self::IPQS_PARAM_USER_AGENT => $userAgent,
+            self::IPQS_PARAM_USER_LANGUAGE => $userLanguage,
+            self::IPQS_PARAM_STRICTNESS => $strictness,
+            self::IPQS_PARAM_ALLOW_PUBLIC_ACCESS_PIONTS => $allowPublicAccessPoints,
+            self::IPQS_PARAM_LIGHTER_PENALTIES => $lighterPenalties
+        );
+
+        $result = $this->sendRequest($parameters, $ipAddress);
+
+        // Check to see if our query was successful.
+        if(isset($result['success']) && $result['success'] === true) {
+            $this->saveRequest($parameters, $ipAddress, $result, 'login', $customer->getId(), $customer->getEmail());
+        }
+    }
+
+
+    /**
+     * send transaction event data to ipqs
+     * @param $order
+     * @return $this
+     */
+    public function sendTransaction($order) {
+        $this->logger->info('##### In Transom IPQualityScore ##### sendTransaction()');
+
+        $ipAddress = $this->remoteAddress->getRemoteAddress();
+        $userAgent = $_SERVER ['HTTP_USER_AGENT'];
+        $userLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+
+        // Set the strictness for this query. (0 (least strict) - 3 (most strict))
+        $strictness = 0;
+
+        // You may want to allow public access points like coffee shops, schools, corporations, etc...
+        $allowPublicAccessPoints = 'true';
+
+        // Reduce scoring penalties for mixed quality IP addresses shared by good and bad users.
+        $lighterPenalties = 'false';
+
+        // populate order and payment variables
+        $orderId = $order->getIncrementId();
+        $orderAmount = $order->getGrandTotal();
+        $orderCurrency = $order->getOrderCurrencyCode();
+
+        // populate customer variables
+        $customerId = $order->getCustomerId();
+        $customerEmail = $order->getCustomerEmail();
+
+        // populate billing address variables
+        $billingAddress = $order->getBillingAddress();
+        $billingFirstName = $billingAddress->getFirstname();
+        $billingLastName = $billingAddress->getLastName();
+        $billingTelephone = $billingAddress->getTelephone();
+        $billingStreet = $billingAddress->getStreet();
+        $billingAddress1 = $billingStreet[0];
+        $billingAddress2 = "";
+        if (isset($billingStreet[1])) {
+            $billingAddress2 = $billingStreet[1];
+        }
+        $billingCity = $billingAddress->getCity();
+        $billingRegion = $billingAddress->getRegion();
+        $billingCountry = $billingAddress->getCountryId();
+        $billingZipCode = $billingAddress->getPostcode();
+
+        // populate shipping address variables
+        $shippingAddress = $order->getShippingAddress();
+        $shippingFirstName = $shippingAddress->getFirstname();
+        $shippingLastName = $shippingAddress->getLastName();
+        $shippingTelephone = $shippingAddress->getTelephone();
+        $shippingStreet = $shippingAddress->getStreet();
+        $shippingAddress1 = $shippingStreet[0];
+        $shippingAddress2 = "";
+        if (isset($shippingStreet[1])) {
+            $shippingAddress2 = $shippingStreet[1];
+        }
+        $shippingCity = $shippingAddress->getCity();
+        $shippingRegion = $shippingAddress->getRegion();
+        $shippingCountry = $shippingAddress->getCountryId();
+        $shippingZipCode = $shippingAddress->getPostcode();
+
+        // TODO - populate event variables
+        //$eventTime = $this->eventDate->format('Y-m-d\TH:i:s.') . gettimeofday()['usec'] . 'Z';
+        //$eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-') . gettimeofday()['usec'];
+
+        $parameters = array(
+            self::IPQS_PARAM_USER_AGENT => $userAgent,
+            self::IPQS_PARAM_USER_LANGUAGE => $userLanguage,
+            self::IPQS_PARAM_STRICTNESS => $strictness,
+            self::IPQS_PARAM_ALLOW_PUBLIC_ACCESS_PIONTS => $allowPublicAccessPoints,
+            self::IPQS_PARAM_LIGHTER_PENALTIES => $lighterPenalties,
+
+            // set billing params
+            self::IPQS_PARAM_BILLING_FIRST_NAME => $billingFirstName,
+            self::IPQS_PARAM_BILLING_LAST_NAME => $billingLastName,
+            self::IPQS_PARAM_BILLING_COUNTRY => $billingCountry,
+            self::IPQS_PARAM_BILLING_ADDRESS_1 => $billingAddress1,
+            self::IPQS_PARAM_BILLING_ADDRESS_2 => $billingAddress2,
+            self::IPQS_PARAM_BILLING_CITY => $billingCity,
+            self::IPQS_PARAM_BILLING_STATE => $billingRegion,
+            self::IPQS_PARAM_BILLING_ZIPCODE => $billingZipCode,
+            self::IPQS_PARAM_BILLING_PHONE => $billingTelephone,
+            self::IPQS_PARAM_BILLING_EMAIL => $customerEmail,
+
+            // set shipping params
+            self::IPQS_PARAM_SHIPPING_FIRST_NAME => $shippingFirstName,
+            self::IPQS_PARAM_SHIPPING_LAST_NAME => $shippingLastName,
+            self::IPQS_PARAM_SHIPPING_COUNTRY => $shippingCountry,
+            self::IPQS_PARAM_SHIPPING_ADDRESS_1 => $shippingAddress1,
+            self::IPQS_PARAM_SHIPPING_ADDRESS_2 => $shippingAddress2,
+            self::IPQS_PARAM_SHIPPING_CITY => $shippingCity,
+            self::IPQS_PARAM_SHIPPING_STATE => $shippingRegion,
+            self::IPQS_PARAM_SHIPPING_ZIPCODE => $shippingZipCode,
+            self::IPQS_PARAM_SHIPPING_PHONE => $shippingTelephone,
+            self::IPQS_PARAM_SHIPPING_EMAIL => $customerEmail,
+
+            // add order transaction parameters
+            self::IPQS_PARAM_ORDER_AMOUNT => $orderAmount
+        );
+
+        $result = $this->sendRequest($parameters, $ipAddress);
+
+        // Check to see if our query was successful.
+        if(isset($result['success']) && $result['success'] === true) {
+            $this->saveRequest($parameters, $ipAddress, $result, 'transaction', $customerId, $customerEmail, $orderId);
+        }
+
+//        try {
+//
+//        } catch (\Throwable $exception) {
+//            $this->logger->critical('Exception in Transom CreateOrderObserver -- ' . $exception->getMessage());
+//            // let order complete
+//        }
+    }
+
+
+    /**
+     * send requestt to ip quality score service
+     * @param $parameters
+     * @param $ipAddress
+     * @return $this|mixed
+     */
+    protected function sendRequest($parameters, $ipAddress) {
 
         // only process order if this service is enabled
         if (!$this->config->isApiActive()) {
             return $this;
         }
-
-        $this->logger->info('##### In Transom IPQualityScore ##### Api->sendLogin()');
-        $this->logger->info('##### plan type = ' . $this->config->getPlanType());
 
         // get credentials, call IP quality score
         if ($this->config->isApiAccessKeysInAdmin()) {
@@ -81,32 +272,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
             return $this;
         }
 
-        $ipAddress = $this->remoteAddress->getRemoteAddress();
-        $userAgent = $_SERVER ['HTTP_USER_AGENT'];
-        $userLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
-
-        // Set the strictness for this query. (0 (least strict) - 3 (most strict))
-        $strictness = 1;
-
-        // You may want to allow public access points like coffee shops, schools, corporations, etc...
-        $allowPublicAccessPoints = 'true';
-
-        // Reduce scoring penalties for mixed quality IP addresses shared by good and bad users.
-        $lighterPenalties = 'false';
-
-        $this->logger->info('##### ipAddress = ' . $ipAddress);
-        $this->logger->info('##### userAgent = ' . $userAgent);
-        $this->logger->info('##### userLanguage = ' . $userLanguage);
-        $this->logger->info('##### endpointUrl = ' . $endpointUrl);
-        $this->logger->info('##### apiKey = ' . $apiKey);
-
-        $parameters = array(
-            'user_agent' => $userAgent,
-            'user_language' => $userLanguage,
-            'strictness' => $strictness,
-            'allow_public_access_points' => $allowPublicAccessPoints,
-            'lighter_penalties' => $lighterPenalties
-        );
 
         $formattedParameters = http_build_query($parameters);
         $url = sprintf(
@@ -115,7 +280,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
             $ipAddress,
             $formattedParameters
         );
-        $this->logger->info('##### url = ' . $url);
 
         // Fetch The Result
         $timeout = 5;
@@ -130,11 +294,10 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         curl_close($curl);
 
         // Decode the result into an array.
-        $result = json_decode($json, true);
+        return json_decode($json, true);
+    }
 
-        if(isset($result['message'])) {
-            $this->logger->info('##### message = ' . $result['message']);
-        }
+    protected function saveRequest($parameters, $ipAddress, $result, $type, $customerId, $customerEmail, $order = NULL) {
 
         foreach ($result as $key => $value) {
             if (getType($value) === 'object') {
@@ -144,41 +307,61 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
             }
         }
 
-        $this->logger->info('##### ##### is set? ' . isset($result['success']));
-        $this->logger->info('##### ##### success = ' . $result['success']);
-        $this->logger->info('##### ##### success test ' . (isset($result['success']) && $result['success'] === true) );
+        $fraudScore = $result['fraud_score'];
+        $this->logger->info('##### ##### ##### fraud score = ' . $fraudScore);
 
-        // Check to see if our query was successful.
-        if(isset($result['success']) && $result['success'] === true) {
-            $fraudScore = $result['fraud_score'];
-            $this->logger->info('##### ##### ##### fraud score = ' . $fraudScore);
+        $this->logger->info('##### ##### ##### customer_id = ' . $customerId);
+        $this->logger->info('##### ##### ##### email = ' . $customerEmail);
 
-            $this->logger->info('##### ##### ##### customer_id = ' . $customer->getId());
-            $this->logger->info('##### ##### ##### email = ' . $customer->getEmail());
-            $customerId = intval($customer->getId());
-
-            $request = array(
-                'type' => 'login',
-                'customer_id' => $customerId,
-                'email' => $customer->getEmail(),
-                'ip_address' => $ipAddress
-            );
-            $request = array_merge($request, $parameters);
-            $this->logger->info('##### ##### request:');
-            foreach ($request as $key => $value) {
-                $this->logger->info('##### data[' . $key . '] (type=' . getType($value) .  ') = ' . $value);
-            }
-
-            try {
-                $ipqsInterface = $this->ipqsApiRequestFactory->create();
-                $ipqsInterface->setData('type', 'login');
-                $ipqsInterface->setData('fraud_score', $fraudScore);
-                $ipqsInterface->setData('request', json_encode($request));
-                $ipqsInterface->setData('response', json_encode($result));
-                $this->ipqsApiRequestResource->save($ipqsInterface);
-            } catch (\Exception $e) {
-                $this->logger->info('Exception saving IPQS request: ' . $e->getMessage());
-            }
+        $request = array(
+            'type' => 'login',
+            'customer_id' => $customerId,
+            'email' =>  $customerEmail,
+            'ip_address' => $ipAddress
+        );
+        $request = array_merge($request, $parameters);
+        $this->logger->info('##### ##### request:');
+        foreach ($request as $key => $value) {
+            $this->logger->info('##### data[' . $key . '] (type=' . getType($value) .  ') = ' . $value);
         }
+
+        try {
+            $ipqsInterface = $this->ipqsApiRequestFactory->create();
+            $ipqsInterface->setData('type', 'login');
+            $ipqsInterface->setData('fraud_score', $fraudScore);
+            $ipqsInterface->setData('request', json_encode($request));
+            $ipqsInterface->setData('response', json_encode($result));
+            $this->ipqsApiRequestResource->save($ipqsInterface);
+        } catch (\Exception $e) {
+            $this->logger->info('Exception saving IPQS request: ' . $e->getMessage());
+        }
+
+        if ($order) {
+            $this->updateOrderStatus($order, $fraudScore);
+        }
+    }
+
+
+    protected function updateOrderStatus($order, $fraudScore) {
+
+        $outcome = 'legit';
+
+        // update order status
+        if ($outcome == 'legit') {
+            $order->addStatusToHistory($order->getStatus(), 'Legit order, IPQS fraud score: ' . $fraudScore, false);
+        } else if ($outcome == 'block_order') {
+            $order->setHoldBeforeState($order->getState());
+            $order->setHoldBeforeStatus($order->getStatus());
+            $order->setState(Order::STATE_HOLDED);
+            $order->setStatus(Order::STATUS_FRAUD);
+            $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state to on hold - for order review.  IPQS fraud score: ' . $fraudScore, false);
+            $this->orderRepository->save($order);
+        } else if ($outcome == 'cancel_order') {
+            $order->setState(Order::STATE_CANCELED);
+            $order->setStatus(Order::STATUS_FRAUD);
+            $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state cancel.  IPQS fraud score: ' . $fraudScore, false);
+            $this->orderRepository->save($order);
+        }
+
     }
 }

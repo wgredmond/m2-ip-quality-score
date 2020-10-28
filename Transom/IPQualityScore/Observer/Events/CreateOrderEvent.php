@@ -16,10 +16,11 @@ use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
+use Transom\IPQualityScore\Helper\Api;
 use Transom\IPQualityScore\Model\ConfigSettings;
 
 
-class CreateOrderObserver implements ObserverInterface
+class CreateOrderEvent implements ObserverInterface
 {
 
     /**
@@ -33,42 +34,25 @@ class CreateOrderObserver implements ObserverInterface
     protected $config;
 
     /**
-     * @var DateTime
+     * @var \Transom\IPQualityScore\Helper\Api
      */
-    protected $eventDate;
-
-    /**
-     * @var \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress
-     */
-    private $remoteAddress;
-
-    /**
-     * @var \Magento\Sales\Api\OrderRepositoryInterface
-     */
-    private $orderRepository;
+    protected $api;
 
 
     /**
-     * CreateOrderObserver constructor.
-     *
+     * CreateAccountEvent constructor.
      * @param LoggerInterface $logger
      * @param ConfigSettings $config
-     * @param DateTime $eventDate
-     * @param RemoteAddress $remoteAddress
+     * @param Api $api
      */
     public function __construct(LoggerInterface $logger,
                                 ConfigSettings $config,
-                                DateTime $eventDate,
-                                OrderRepositoryInterface $orderRepository,
-                                RemoteAddress $remoteAddress)
+                                Api $api)
     {
         $this->logger = $logger;
         $this->config = $config;
-        $this->eventDate =  $eventDate;
-        $this->orderRepository = $orderRepository;
-        $this->remoteAddress = $remoteAddress;
+        $this->api = $api;
     }
-
 
     /**
      * @param \Magento\Framework\Event\Observer $observer
@@ -81,15 +65,7 @@ class CreateOrderObserver implements ObserverInterface
             return $this;
         }
 
-        // get credentials, call IP quality score
-        if ($this->config->isApiAccessKeysInAdmin()) {
-            // TODO: call ip quality score api
-            $apiKey = $this->config->getApiKey();
-        } else {
-            // TODO get creds from env
-            $this->logger->info('TODO hook up dont manage credentials in admin option.');
-            return $this;
-        }
+        $this->logger->info('##### In Transom IPQualityScore ##### CreateOrderEvent');
 
         // get payment
         $payment = $observer->getData('payment');
@@ -103,63 +79,6 @@ class CreateOrderObserver implements ObserverInterface
             return $this;
         }
 
-        // populate order and payment variables
-        $orderId = $order->getIncrementId();
-        $orderAmount = $order->getGrandTotal();
-        $orderCurrency = $order->getOrderCurrencyCode();
-
-        // populate customer variables
-        $customerId = $order->getCustomerId();
-        $customerEmail = $order->getCustomerEmail();
-
-        // populate billing address variables
-        $billingAddress = $order->getBillingAddress();
-        $billingFirstName = $billingAddress->getFirstname();
-        $billingLastName = $billingAddress->getLastName();
-        $billingName = $billingFirstName . " " . $billingLastName;
-        $billingTelephone = $billingAddress->getTelephone();
-        $billingStreet = $billingAddress->getStreet();
-        $billingAddress1 = $billingStreet[0];
-        $billingAddress2 = "";
-        if (isset($billingStreet[1])) {
-            $billingAddress2 = $billingStreet[1];
-        }
-        $billingCity = $billingAddress->getCity();
-        $billingRegion = $billingAddress->getRegion();
-        $billingCountry = $billingAddress->getCountryId();
-        $billingZipCode = $billingAddress->getPostcode();
-
-        // populate shipping address variables
-        $shippingAddress = $order->getShippingAddress();
-        $shippingFirstName = $shippingAddress->getFirstname();
-        $shippingLastName = $shippingAddress->getLastName();
-        $shippingName = $shippingFirstName . " " . $shippingLastName;
-        $shippingTelephone = $shippingAddress->getTelephone();
-        $shippingStreet = $shippingAddress->getStreet();
-        $shippingAddress1 = $shippingStreet[0];
-        $shippingAddress2 = "";
-        if (isset($shippingStreet[1])) {
-            $shippingAddress2 = $shippingStreet[1];
-        }
-        $shippingCity = $shippingAddress->getCity();
-        $shippingRegion = $shippingAddress->getRegion();
-        $shippingCountry = $shippingAddress->getCountryId();
-        $shippingZipCode = $shippingAddress->getPostcode();
-
-        // populate event variables
-        $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.') . gettimeofday()['usec'] . 'Z';
-        $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-') . gettimeofday()['usec'];
-
-        // populate session variables
-        $ipAddress = $this->remoteAddress->getRemoteAddress();
-        //$session            = $this->customerSession->getMyValue();
-        $userAgent = $_SERVER ['HTTP_USER_AGENT'];
-
-        try {
-
-        } catch (\Throwable $exception) {
-            $this->logger->critical('Exception in Transom CreateOrderObserver -- ' . $exception->getMessage());
-            // let order complete
-        }
+        $this->api->sendTransaction($order);
     }
 }

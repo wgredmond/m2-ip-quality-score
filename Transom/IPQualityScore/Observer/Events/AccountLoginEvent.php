@@ -33,6 +33,7 @@ class AccountLoginEvent implements ObserverInterface
      */
     protected $api;
 
+
     /**
      * AccountLoginEvent constructor.
      * @param LoggerInterface $logger
