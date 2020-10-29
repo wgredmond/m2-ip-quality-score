@@ -81,4 +81,5 @@ class CreateOrderEvent implements ObserverInterface
 
         $this->api->sendTransaction($order);
     }
+
 }

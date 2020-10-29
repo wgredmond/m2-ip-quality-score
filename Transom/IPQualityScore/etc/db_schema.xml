@@ -19,6 +19,7 @@
         <column xsi:type="int" name="ipqs_order_score_id" padding="10" identity="true" unsigned="true" nullable="false" comment="IPQS Order Score ID"/>
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" comment="Order Id"/>
         <column xsi:type="int" name="fraud_score" unsigned="false" nullable="false" comment="Fraud Score"/>
+        <column xsi:type="int" name="risk_score" unsigned="false" nullable="false" comment="Risk Score"/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="ipqs_order_score_id"/>

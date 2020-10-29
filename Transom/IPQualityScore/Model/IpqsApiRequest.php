@@ -4,10 +4,8 @@
 namespace Transom\IPQualityScore\Model;
 
 
-
 class IpqsApiRequest extends \Magento\Framework\Model\AbstractModel implements \Magento\Framework\DataObject\IdentityInterface
 {
-
 
     const CACHE_TAG = 'ipqs_api_request';
 
