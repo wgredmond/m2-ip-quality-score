@@ -65,8 +65,6 @@ class CreateOrderEvent implements ObserverInterface
             return $this;
         }
 
-        $this->logger->info('##### In Transom IPQualityScore ##### CreateOrderEvent');
-
         // get payment
         $payment = $observer->getData('payment');
 
@@ -75,7 +73,6 @@ class CreateOrderEvent implements ObserverInterface
 
         //  if order data is empty then doesn't need to process
         if (empty($order)) {
-            $this->logger->info('There is an error in CreateOrderObserver');
             return $this;
         }
 

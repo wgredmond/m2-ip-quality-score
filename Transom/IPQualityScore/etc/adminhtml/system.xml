@@ -50,7 +50,46 @@
                         <comment><![CDATA[IP Quality Scores plan type]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
-                            <field id="api_access_keys_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="fast" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Fast</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>fraud_protection/transom_ip_quality_score/fast</config_path>
+                        <comment><![CDATA[Speeds up the API response time. This option is intended for services that require decision making in a time sensitive manner and can be used for any strictness level.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="strictness" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Strictness</label>
+                        <source_model>Transom\IPQualityScore\Model\Config\Settings\Strictness</source_model>
+                        <config_path>fraud_protection/transom_ip_quality_score/strictness</config_path>
+                        <comment><![CDATA[Set the strictness for this query. (0 (least strict) - 3 (most strict))]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="allowPublicAccessPoints" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Allow Public Access Points</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>fraud_protection/transom_ip_quality_score/allow_public_access_points</config_path>
+                        <comment><![CDATA[Allow public access points like coffee shops, schools, corporations, etc...]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="lighterPenalties" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Lighter Penalties</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>fraud_protection/transom_ip_quality_score/lighter_penalties</config_path>
+                        <comment><![CDATA[Reduce scoring penalties for mixed quality IP addresses shared by good and bad users.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
                         </depends>
                     </field>
 

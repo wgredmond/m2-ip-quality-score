@@ -9,6 +9,7 @@
         <column xsi:type="text" name="request" nullable="false" comment="Request"/>
         <column xsi:type="text" name="response" nullable="false" comment="Response"/>
         <column xsi:type="timestamp" name="updated" nullable="false" on_update="true" default="CURRENT_TIMESTAMP" comment="Updated"/>
+
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="ipqs_api_request_id"/>
         </constraint>

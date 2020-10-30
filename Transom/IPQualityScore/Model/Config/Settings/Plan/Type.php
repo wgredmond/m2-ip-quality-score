@@ -7,22 +7,22 @@ class Type implements \Magento\Framework\Option\ArrayInterface
     public function toOptionArray()
     {
         return [
-            ['value' => 'free', 'label' => __('Free')],
-            ['value' => 'premium', 'label' => __('Premium')],
-            ['value' => 'enterprise_mini', 'label' => __('Enterprise Mini')],
-            ['value' => 'enterprise', 'label' => __('Enterprise')],
-            ['value' => 'enterprise_plus', 'label' => __('Enterprise Plus')]
+            ['value' => 0, 'label' => __('Free')],
+            ['value' => 1, 'label' => __('Premium')],
+            ['value' => 2, 'label' => __('Enterprise Mini')],
+            ['value' => 3, 'label' => __('Enterprise')],
+            ['value' => 4, 'label' => __('Enterprise Plus')]
         ];
     }
 
     public function toArray()
     {
         return [
-            'free' => __('Free'),
-            'premium' => __('Premium'),
-            'enterprise_mini' => __('Enterprise Mini'),
-            'enterprise' => __('Enterprise'),
-            'enterprise_plus' => __('Enterprise Plus')
+            0 => __('Free'),
+            1 => __('Premium'),
+            2 => __('Enterprise Mini'),
+            3 => __('Enterprise'),
+            4 => __('Enterprise Plus')
         ];
     }
 }

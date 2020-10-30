@@ -7,6 +7,11 @@
                 <api_end_point>1</api_end_point>
                 <api_access_keys_enabled>1</api_access_keys_enabled>
                 <api_key/>
+                <plan_type>1</plan_type>
+                <fast>1</fast>
+                <strictness>0</strictness>
+                <allow_public_access_points>1</allow_public_access_points>
+                <lighter_penalties>0</lighter_penalties>
             </transom_ip_quality_score>
         </fraud_protection>
     </default>

@@ -108,6 +108,58 @@ class ConfigSettings
             'fraud_protection/transom_ip_quality_score/plan_type',
             ScopeInterface::SCOPE_WEBSITE
         );
-        return $planType;
+        return intval($planType);
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getFast()
+    {
+        $fast = $this->scopeConfig->isSetFlag(
+            'fraud_protection/transom_ip_quality_score/fast',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return $fast ? 'true' : 'false';
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getStrictness()
+    {
+        $strictness = $this->scopeConfig->getValue(
+            'fraud_protection/transom_ip_quality_score/strictness',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return intval($strictness);
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getAllowPublicAccessPoints()
+    {
+        $allowPublicAccessPoints = $this->scopeConfig->isSetFlag(
+            'fraud_protection/transom_ip_quality_score/allow_public_access_points',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return $allowPublicAccessPoints ? 'true' : 'false';
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getLighterPenalties()
+    {
+        $lighterPenalties = $this->scopeConfig->isSetFlag(
+            'fraud_protection/transom_ip_quality_score/lighter_penalties',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return $lighterPenalties ? 'true' : 'false';
     }
 }
