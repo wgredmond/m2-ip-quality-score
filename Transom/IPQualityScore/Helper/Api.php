@@ -121,6 +121,9 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @return $this
      */
     public function sendLogin($customer) {
+        $this->logger->info(" ##### In sendLogin()");
+        $this->logger->info(" ##### customer id = " . $customer->getId());
+        $this->logger->info(" ##### email = " . $customer->getEmail());
 
         // get basic parameters
         $ipAddress = $this->remoteAddress->getRemoteAddress();
@@ -167,6 +170,9 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         );
 
         // populate order and payment variables
+        $this->logger->info(" ##### increment id = " . $order->getIncrementId());
+        $this->logger->info(" ##### id = " . $order->getId());
+        $this->logger->info(" ##### entity id = " . $order->getEntityId());
         $orderId = $order->getIncrementId();
         $orderAmount = $order->getGrandTotal();
 
@@ -180,7 +186,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         // populate billing address variables
         $billingAddress = $order->getBillingAddress();
         if ($billingAddress) {
-            $billingFirstName = $billingAddress->getFirstname();
+            $billingFirstName = $billingAddress->getFirstName();
             $billingLastName = $billingAddress->getLastName();
             $billingTelephone = $billingAddress->getTelephone();
             $billingStreet = $billingAddress->getStreet();
@@ -255,6 +261,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @return $this|mixed
      */
     protected function sendRequest($parameters, $ipAddress) {
+        $this->logger->info(" ##### In sendRequest()");
 
         // only process order if this service is enabled
         if (!$this->config->isApiActive()) {
@@ -307,8 +314,12 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @param null $order
      */
     protected function saveRequest($parameters, $ipAddress, $result, $type, $customerId, $customerEmail) {
+        $this->logger->info(" ##### In saveRequest()");
+
         $fraudScore = $result[self::IPQS_PARAM_FRAUD_SCORE];
+        $this->logger->info(" ##### fraudScore = " . $fraudScore);
         $botStatus = $result[self::IPQS_PARAM_BOT_STATUS];
+        $this->logger->info(" ##### botStatus = " . $botStatus);
 
         $request = array(
             'type' => $type,
@@ -317,13 +328,14 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
             'ip_address' => $ipAddress
         );
         $request = array_merge($request, $parameters);
+        $data = array_merge($result, $request);
 
         try {
             $ipqsInterface = $this->ipqsApiRequestFactory->create();
             $ipqsInterface->setData('type', $type);
             $ipqsInterface->setData('fraud_score', $fraudScore);
-            $ipqsInterface->setData('request', json_encode($request));
-            $ipqsInterface->setData('response', json_encode($result));
+            $ipqsInterface->setData('bot_status', $botStatus);
+            $ipqsInterface->setData('data', json_encode($data));
             $this->ipqsApiRequestResource->save($ipqsInterface);
         } catch (\Exception $e) {
             $this->logger->info('Exception saving IPQS request: ' . $e->getMessage());
@@ -338,12 +350,14 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
     protected function saveOrderScore($result, $orderId) {
         $fraudScore = $result[self::IPQS_PARAM_FRAUD_SCORE];
         $riskScore = $result[self::IPQS_PARAM_TRANSACTION_DETAILS][self::IPQS_PARAM_RISK_SCORE];
+        $botStatus = $result[self::IPQS_PARAM_BOT_STATUS];
 
         try {
             $orderScoreInterface = $this->orderScoreFactory->create();
+            $orderScoreInterface->setData('order_id', $orderId);
             $orderScoreInterface->setData('fraud_score', $fraudScore);
             $orderScoreInterface->setData('risk_score', $riskScore);
-            $orderScoreInterface->setData('order_id', $orderId);
+            $orderScoreInterface->setData('bot_status', $botStatus);
             $this->orderScoreResource->save($orderScoreInterface);
         } catch (\Exception $e) {
             $this->logger->info('Exception saving IPQS score: ' . $e->getMessage());
