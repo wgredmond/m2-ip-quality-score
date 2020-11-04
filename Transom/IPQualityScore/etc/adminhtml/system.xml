@@ -1,21 +1,24 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
-        <section id="fraud_protection">
+        <section id="trust_and_safety" translate="label" type="text" sortOrder="610" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Trust and Safety</label>
+            <tab>sales</tab>
+            <resource>Magento_Sales::trust_and_safety</resource>
             <group id="transom_ip_quality_score" type="text" sortOrder="05" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Transom - IP Quality Score</label>
                 <group id="api_config" translate="label comment" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API Configuration</label>
                     <field id="api_enabled" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
-                        <config_path>fraud_protection/transom_ip_quality_score/api_enabled</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/api_enabled</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                         <comment><![CDATA[Enable or disable the Transom IP Quality Score inetgration.]]></comment>
                     </field>
 
                     <field id="end_point" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Endpoint</label>
-                        <config_path>fraud_protection/transom_ip_quality_score/api_end_point</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/api_end_point</config_path>
                         <validate>required-entry</validate>
                         <comment><![CDATA[IP Quality Score end point.]]></comment>
                         <depends>
@@ -23,30 +26,19 @@
                         </depends>
                     </field>
 
-                    <field id="api_access_keys_enabled" translate="label comment" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Manage Access Keys in Admin</label>
-                        <config_path>fraud_protection/transom_ip_quality_score/api_access_keys_enabled</config_path>
-                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                        <comment><![CDATA[Manage IP Quality Score access keys in Magento admin.]]></comment>
-                        <depends>
-                            <field id="api_enabled">1</field>
-                        </depends>
-                    </field>
-
                     <field id="key" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Key</label>
-                        <config_path>fraud_protection/transom_ip_quality_score/api_key</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/api_key</config_path>
                         <comment><![CDATA[IP Quality Scores access key]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
-                            <field id="api_access_keys_enabled">1</field>
                         </depends>
                     </field>
 
                     <field id="plan_type" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Plan Type</label>
                         <source_model>Transom\IPQualityScore\Model\Config\Settings\Plan\Type</source_model>
-                        <config_path>fraud_protection/transom_ip_quality_score/plan_type</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/plan_type</config_path>
                         <comment><![CDATA[IP Quality Scores plan type]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
@@ -56,7 +48,7 @@
                     <field id="fast" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Fast</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <config_path>fraud_protection/transom_ip_quality_score/fast</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/fast</config_path>
                         <comment><![CDATA[Speeds up the API response time. This option is intended for services that require decision making in a time sensitive manner and can be used for any strictness level.]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
@@ -66,7 +58,7 @@
                     <field id="strictness" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Strictness</label>
                         <source_model>Transom\IPQualityScore\Model\Config\Settings\Strictness</source_model>
-                        <config_path>fraud_protection/transom_ip_quality_score/strictness</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/strictness</config_path>
                         <comment><![CDATA[Set the strictness for this query. (0 (least strict) - 3 (most strict))]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
@@ -76,7 +68,7 @@
                     <field id="allowPublicAccessPoints" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Allow Public Access Points</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <config_path>fraud_protection/transom_ip_quality_score/allow_public_access_points</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/allow_public_access_points</config_path>
                         <comment><![CDATA[Allow public access points like coffee shops, schools, corporations, etc...]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
@@ -86,25 +78,46 @@
                     <field id="lighterPenalties" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Lighter Penalties</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                        <config_path>fraud_protection/transom_ip_quality_score/lighter_penalties</config_path>
+                        <config_path>trust_and_safety/transom_ip_quality_score/lighter_penalties</config_path>
                         <comment><![CDATA[Reduce scoring penalties for mixed quality IP addresses shared by good and bad users.]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
                         </depends>
                     </field>
+                </group>
+                <group id="order_status_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Order Status</label>
+                    <comment><![CDATA[The overall fraud score of the user based on the IP, user agent, language, and any other optionally passed variables.]]></comment>
 
+                    <field id="cancelThreshold" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Cancel Thrshold</label>
+                        <config_path>trust_and_safety/transom_ip_quality_score/cancel_threshold</config_path>
+                        <validate>validate-number-range number-range-0-100</validate>
+                        <comment><![CDATA[Threshold for orders that are fraudulent, a number between 0 and 100.]]></comment>
+                    </field>
+
+                    <field id="cancelUpdateOrderStatus" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Enabled</label>
+                        <config_path>trust_and_safety/transom_ip_quality_score/cancel_update_order_status</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                        <comment><![CDATA[Automatically update order status to Canel when frraud score exceeds cancel threshold.]]></comment>
+                    </field>
+
+                    <field id="reviewThreshold" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Review threshold</label>
+                        <config_path>trust_and_safety/transom_ip_quality_score/review_threshold</config_path>
+                        <validate>validate-number-range number-range-0-100</validate>
+                        <comment><![CDATA[Threshold for orders that are suspicious, but not necessarily fraudulent.]]></comment>
+                    </field>
+
+                    <field id="reviewUpdateOrderStatus" translate="label comment" sortOrder="40" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Update order status based on review threshold</label>
+                        <config_path>trust_and_safety/transom_ip_quality_score/review_update_order_status</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                        <comment><![CDATA[Automatically update order status to Suspected Fraud when frraud score exceeds review threshold, a number between 0 and 100.]]></comment>
+                    </field>
                 </group>
             </group>
         </section>
     </system>
 </config>
-
-
-<!--
-
-  https://devdocs.magento.com/guides/v2.4/ext-best-practices/tutorials/dynamic-row-system-config.html
-
-  https://www.atwix.com/magento-2/dynamic-fields-in-system-configuration/
-
--->
-

@@ -11,16 +11,18 @@
 namespace Transom\IPQualityScore\Helper;
 
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
-use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 use Transom\IPQualityScore\Model\ConfigSettings;
 use Transom\IPQualityScore\Model\IpqsApiRequestFactory;
+use Transom\IPQualityScore\Model\OrderManager;
 use Transom\IPQualityScore\Model\OrderScoreFactory;
 use Transom\IPQualityScore\Model\ResourceModel\IpqsApiRequest;
 use Transom\IPQualityScore\Model\ResourceModel\OrderScore;
 
 
+
 class Api extends \Magento\Framework\App\Helper\AbstractHelper {
+
 
     // see https://www.ipqualityscore.com/documentation/proxy-detection/overview for ipqs api overview
     const IPQS_PARAM_STRICTNESS = 'strictness';
@@ -51,6 +53,8 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
     const IPQS_PARAM_SHIPPING_ZIPCODE = 'shiping_zipcode';
     const IPQS_PARAM_SHIPPING_PHONE = 'shiping_phone';
     const IPQS_PARAM_SHIPPING_EMAIL = 'shiping_email';
+    const IPQS_PARAM_CC_EXP_MONTH = "credit_card_expiration_month";
+    const IPQS_PARAM_CC_EXP_YEAR = "credit_card_expiration_year";
     const IPQS_PARAM_ORDER_AMOUNT = 'order_amount';
     const IPQS_PARAM_SUCCESS = 'success';
     const IPQS_PARAM_FRAUD_SCORE = 'fraud_score';
@@ -60,6 +64,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
 
     const IPQS_REQUEST_LOGIN = 'login';
     const IPQS_REQUEST_TRANSACTION = 'transaction';
+
 
     /**
      * @var LoggerInterface
@@ -92,10 +97,19 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
     protected $orderScoreResource;
 
     /**
+     * @var \Transom\IPQualityScore\Model\OrderManager
+     */
+    protected $orderManager;
+
+    /**
      * Api constructor.
-     *
      * @param LoggerInterface $logger
      * @param ConfigSettings $config
+     * @param IpqsApiRequestFactory $ipqsApiRequestFactory
+     * @param IpqsApiRequest $ipqsApiRequestResource
+     * @param OrderScoreFactory $orderScoreFactory
+     * @param OrderScore $orderScoreResource
+     * @param RemoteAddress $remoteAddress
      */
     public function __construct(LoggerInterface $logger,
                                 ConfigSettings $config,
@@ -103,6 +117,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
                                 IpqsApiRequest $ipqsApiRequestResource,
                                 OrderScoreFactory $orderScoreFactory,
                                 OrderScore $orderScoreResource,
+                                OrderManager $orderManager,
                                 RemoteAddress $remoteAddress)
     {
         $this->logger = $logger;
@@ -111,6 +126,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->ipqsApiRequestResource = $ipqsApiRequestResource;
         $this->orderScoreFactory = $orderScoreFactory;
         $this->orderScoreResource = $orderScoreResource;
+        $this->orderManager = $orderManager;
         $this->remoteAddress = $remoteAddress;
     }
 
@@ -121,9 +137,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @return $this
      */
     public function sendLogin($customer) {
-        $this->logger->info(" ##### In sendLogin()");
-        $this->logger->info(" ##### customer id = " . $customer->getId());
-        $this->logger->info(" ##### email = " . $customer->getEmail());
 
         // get basic parameters
         $ipAddress = $this->remoteAddress->getRemoteAddress();
@@ -153,7 +166,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @param $order
      * @return $this
      */
-    public function sendTransaction($order) {
+    public function sendTransaction(\Magento\Sales\Model\Order\Interceptor $order, \Magento\Sales\Model\Order\Payment\Interceptor $payment) {
 
         // get basic parameters
         $ipAddress = $this->remoteAddress->getRemoteAddress();
@@ -170,11 +183,18 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         );
 
         // populate order and payment variables
-        $this->logger->info(" ##### increment id = " . $order->getIncrementId());
-        $this->logger->info(" ##### id = " . $order->getId());
-        $this->logger->info(" ##### entity id = " . $order->getEntityId());
         $orderId = $order->getIncrementId();
         $orderAmount = $order->getGrandTotal();
+
+        // populate cc variables
+        $ccExpMonth = $payment->getCcExpMonth();
+        if ($ccExpMonth) {
+            $parameters[self::IPQS_PARAM_CC_EXP_MONTH] = $ccExpMonth;
+        }
+        $ccExpYear = $payment->getCcExpYear();
+        if ($ccExpYear) {
+            $parameters[self::IPQS_PARAM_CC_EXP_YEAR] = $ccExpYear;
+        }
 
         // populate customer variables
         $customerId = $order->getCustomerId();
@@ -249,7 +269,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         if(isset($result[self::IPQS_PARAM_SUCCESS]) && $result[self::IPQS_PARAM_SUCCESS] === true) {
             $this->saveRequest($parameters, $ipAddress, $result, self::IPQS_REQUEST_TRANSACTION, $customerId, $customerEmail);
             $this->saveOrderScore($result, $orderId);
-            $this->updateOrderStatus($result, $order);
+            $this->orderManager->updateOrderStatus($result[self::IPQS_PARAM_FRAUD_SCORE], $result[self::IPQS_PARAM_TRANSACTION_DETAILS][self::IPQS_PARAM_RISK_SCORE], $order);
         }
     }
 
@@ -261,7 +281,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @return $this|mixed
      */
     protected function sendRequest($parameters, $ipAddress) {
-        $this->logger->info(" ##### In sendRequest()");
 
         // only process order if this service is enabled
         if (!$this->config->isApiActive()) {
@@ -269,16 +288,8 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         }
 
         // get credentials, call IP quality score
-        if ($this->config->isApiAccessKeysInAdmin()) {
-            // TODO: call ip quality score api
-            $apiKey = $this->config->getApiKey();
-            $endpointUrl = $this->config->getApiEndPoint();
-        } else {
-            // TODO get creds from env
-            $this->logger->info('TODO hook up dont manage credentials in admin option.');
-            return $this;
-        }
-
+        $apiKey = $this->config->getApiKey();
+        $endpointUrl = $this->config->getApiEndPoint();
         $formattedParameters = http_build_query($parameters);
         $url = sprintf(
             $endpointUrl . 'json/ip/%s/%s?%s',
@@ -314,14 +325,12 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @param null $order
      */
     protected function saveRequest($parameters, $ipAddress, $result, $type, $customerId, $customerEmail) {
-        $this->logger->info(" ##### In saveRequest()");
 
         $fraudScore = $result[self::IPQS_PARAM_FRAUD_SCORE];
-        $this->logger->info(" ##### fraudScore = " . $fraudScore);
         $botStatus = $result[self::IPQS_PARAM_BOT_STATUS];
-        $this->logger->info(" ##### botStatus = " . $botStatus);
 
         $request = array(
+            'sent' => date('Y-m-d H:i:s'),
             'type' => $type,
             'customer_id' => $customerId,
             'email' =>  $customerEmail,
@@ -361,42 +370,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
             $this->orderScoreResource->save($orderScoreInterface);
         } catch (\Exception $e) {
             $this->logger->info('Exception saving IPQS score: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * @param $order
-     * @param $fraudScore
-     */
-    protected function updateOrderStatus($result, $order) {
-        $riskScore = $result[self::IPQS_PARAM_TRANSACTION_DETAILS][self::IPQS_PARAM_RISK_SCORE];
-        $fraudScore = $result[self::IPQS_PARAM_FRAUD_SCORE];
-
-        if ($riskScore > 85) {
-            $outcome = 'cancel_order';
-        } else if ($riskScore > 65) {
-            $outcome = 'review_order';
-        }
-
-        try {
-            // update order status
-            if ($outcome == 'legit') {
-                $order->addStatusToHistory($order->getStatus(), 'Legit order, IPQS fraud score: ' . $fraudScore . '; risk score: ' . $riskScore, false);
-            } else if ($outcome == 'review_order') {
-                $order->setHoldBeforeState($order->getState());
-                $order->setHoldBeforeStatus($order->getStatus());
-                $order->setState(Order::STATE_HOLDED);
-                $order->setStatus(Order::STATUS_FRAUD);
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state to on hold - for order review.  IPQS fraud score: ' . $fraudScore . '; risk score: ' . $riskScore, false);
-            } else if ($outcome == 'cancel_order') {
-                $order->setState(Order::STATE_CANCELED);
-                $order->setStatus(Order::STATUS_FRAUD);
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state cancel.  IPQS fraud score: ' . $fraudScore . '; risk score: ' . $riskScore, false);
-            }
-
-        } catch (\Throwable $exception) {
-            $this->logger->critical('Exception in updateOrderStatus -- ' . $exception->getMessage());
-            // let order complete
         }
     }
 }

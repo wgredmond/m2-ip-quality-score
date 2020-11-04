@@ -1,4 +1,13 @@
 <?php
+/**
+ * Transom Group Inc.
+ *
+ *
+ * @category    Transom
+ * @package     Transom_Group
+ * @copyright   Copyright (c) Transom Group. All rights reserved. (https://transom-group.com/)
+ */
+
 namespace Transom\IPQualityScore\Model\Config\Settings;
 
 class Strictness implements \Magento\Framework\Option\ArrayInterface

@@ -1,18 +1,21 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
-        <fraud_protection>
+        <trust_and_safety>
             <transom_ip_quality_score>
                 <api_enabled>1</api_enabled>
-                <api_end_point>1</api_end_point>
-                <api_access_keys_enabled>1</api_access_keys_enabled>
+                <api_end_point>https://www.ipqualityscore.com/api/</api_end_point>
                 <api_key/>
-                <plan_type>1</plan_type>
+                <plan_type>0</plan_type>
                 <fast>1</fast>
                 <strictness>0</strictness>
                 <allow_public_access_points>1</allow_public_access_points>
-                <lighter_penalties>0</lighter_penalties>
+                <lighter_penalties>1</lighter_penalties>
+                <cancel_threshold>85</cancel_threshold>
+                <cancel_update_order_status>0</cancel_update_order_status>
+                <review_threshold>75</review_threshold>
+                <review_update_order_status>0</review_update_order_status>
             </transom_ip_quality_score>
-        </fraud_protection>
+        </trust_and_safety>
     </default>
 </config>

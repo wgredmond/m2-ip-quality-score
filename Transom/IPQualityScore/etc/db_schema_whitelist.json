@@ -4,18 +4,21 @@
             "ipqs_api_request_id": true,
             "type": true,
             "fraud_score": true,
-            "request": true,
-            "response": true,
+            "bot_status": true,
+            "data": true,
             "updated": true
         },
         "constraint": {
             "PRIMARY": true
         }
     },
-    "ipqs_score": {
+    "ipqs_order_score": {
         "column": {
-            "ipqs_score_id": true,
-            "fraud_score": true
+            "ipqs_order_score_id": true,
+            "fraud_score": true,
+            "risk_score": true,
+            "bot_status": true,
+            "updated": true
         },
         "constraint": {
             "PRIMARY": true
