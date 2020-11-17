@@ -6,9 +6,12 @@
             <tab>sales</tab>
             <resource>Magento_Sales::trust_and_safety</resource>
             <group id="transom_ip_quality_score" type="text" sortOrder="05" showInDefault="1" showInWebsite="1" showInStore="0">
+
                 <label>Transom - IP Quality Score</label>
+
                 <group id="api_config" translate="label comment" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>API Configuration</label>
+                    <comment><![CDATA[IP Quality Score (<a href="https://www.ipqualityscore.com/" target="_blank">https://www.ipqualityscore.com/</a>) provides real-time fraud scoring for users and transactions.  This integration is designed to work with IP Quality Score's free plan.  A fraud score is assigned to each order when the order is submitted.]]></comment>
                     <field id="api_enabled" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/api_enabled</config_path>
@@ -26,13 +29,14 @@
                         </depends>
                     </field>
 
-                    <field id="key" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="key" translate="label comment" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Key</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/api_key</config_path>
                         <comment><![CDATA[IP Quality Scores access key]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
                         </depends>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     </field>
 
                     <field id="plan_type" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -87,34 +91,46 @@
                 </group>
                 <group id="order_status_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Order Status</label>
-                    <comment><![CDATA[The overall fraud score of the user based on the IP, user agent, language, and any other optionally passed variables.]]></comment>
+                    <comment><![CDATA[Set fraud thresholds and enable order status updates.]]></comment>
 
                     <field id="cancelThreshold" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Cancel Thrshold</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/cancel_threshold</config_path>
                         <validate>validate-number-range number-range-0-100</validate>
                         <comment><![CDATA[Threshold for orders that are fraudulent, a number between 0 and 100.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
                     </field>
 
                     <field id="cancelUpdateOrderStatus" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Enabled</label>
+                        <label>Update Order Status Based on Cancel Threshold</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/cancel_update_order_status</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                         <comment><![CDATA[Automatically update order status to Canel when frraud score exceeds cancel threshold.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
                     </field>
 
                     <field id="reviewThreshold" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Review threshold</label>
+                        <label>Review Threshold</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/review_threshold</config_path>
                         <validate>validate-number-range number-range-0-100</validate>
                         <comment><![CDATA[Threshold for orders that are suspicious, but not necessarily fraudulent.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
                     </field>
 
                     <field id="reviewUpdateOrderStatus" translate="label comment" sortOrder="40" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Update order status based on review threshold</label>
+                        <label>Update Order Status Based on Review Threshold</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/review_update_order_status</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                         <comment><![CDATA[Automatically update order status to Suspected Fraud when frraud score exceeds review threshold, a number between 0 and 100.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
                     </field>
                 </group>
             </group>

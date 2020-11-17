@@ -139,7 +139,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
     public function sendLogin($customer) {
 
         // get basic parameters
-        $ipAddress = $this->remoteAddress->getRemoteAddress();
+        $ipAddress = $this->getIpAddress();
         $userAgent = $_SERVER ['HTTP_USER_AGENT'];
         $userLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 
@@ -169,7 +169,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
     public function sendTransaction(\Magento\Sales\Model\Order\Interceptor $order, \Magento\Sales\Model\Order\Payment\Interceptor $payment) {
 
         // get basic parameters
-        $ipAddress = $this->remoteAddress->getRemoteAddress();
+        $ipAddress = $ipAddress = $this->getIpAddress();
         $userAgent = $_SERVER ['HTTP_USER_AGENT'];
         $userLanguage = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 
@@ -371,5 +371,45 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         } catch (\Exception $e) {
             $this->logger->info('Exception saving IPQS score: ' . $e->getMessage());
         }
+    }
+
+
+    /**
+     * @return mixed|string
+     */
+    private function getIpAddress() {
+        $this->logger->info(' ### In getIpAddress()');
+
+        // get basic parameters
+        $ipAddress = $this->remoteAddress->getRemoteAddress();
+        $this->logger->info(' ### ip from remoteAddress: ' . $ipAddress);
+
+        //ip from share internet
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $ipAddress = $_SERVER['HTTP_CLIENT_IP'];
+            $this->logger->info(' ### ip from share internet (HTTP_CLIENT_IP): ' . $ipAddress);
+        }
+
+        //ip pass from proxy
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            $this->logger->info(' ### ip pass from proxy (HTTP_X_FORWARDED_FOR): ' . $ipAddress);
+        }
+
+        $ipAddress = $_SERVER['REMOTE_ADDR'];
+        $this->logger->info(' ### ip from REMOTE_ADDR: ' . $ipAddress);
+
+        if(!empty($_SERVER['HTTP_CLIENT_IP'])){
+            //ip from share internet
+            $ipAddress = $_SERVER['HTTP_CLIENT_IP'];
+        }elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
+            //ip pass from proxy
+            $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }else{
+            $ipAddress = $_SERVER['REMOTE_ADDR'];
+        }
+        $this->logger->info(' ### ipAddress: ' . $ipAddress);
+
+        return $ipAddress;
     }
 }
