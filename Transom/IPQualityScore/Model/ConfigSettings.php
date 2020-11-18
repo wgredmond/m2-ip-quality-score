@@ -150,6 +150,21 @@ class ConfigSettings
 
 
     /**
+     * IP Quality Score API feature enabled
+     *
+     * @return bool
+     */
+    public function isUpdateOrderStatus()
+    {
+        $update = $this->scopeConfig->isSetFlag(
+            'trust_and_safety/transom_ip_quality_score/update_order_status',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return $update;
+    }
+
+
+    /**
      * @return int
      */
     public function getCancelThreshold()
@@ -159,21 +174,6 @@ class ConfigSettings
             ScopeInterface::SCOPE_WEBSITE
         );
         return intval($cancelThreshold);
-    }
-
-
-    /**
-     * IP Quality Score API feature enabled
-     *
-     * @return bool
-     */
-    public function isUpdateCancel()
-    {
-        $update = $this->scopeConfig->isSetFlag(
-            'trust_and_safety/transom_ip_quality_score/cancel_update_order_status',
-            ScopeInterface::SCOPE_WEBSITE
-        );
-        return $update;
     }
 
 
@@ -189,18 +189,4 @@ class ConfigSettings
         return intval($reviewThreshold);
     }
 
-
-    /**
-     * IP Quality Score API feature enabled
-     *
-     * @return bool
-     */
-    public function isUpdateReview()
-    {
-        $update = $this->scopeConfig->isSetFlag(
-            'trust_and_safety/transom_ip_quality_score/review_update_order_status',
-            ScopeInterface::SCOPE_WEBSITE
-        );
-        return $update;
-    }
 }

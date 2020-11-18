@@ -11,10 +11,9 @@
                 <strictness>0</strictness>
                 <allow_public_access_points>1</allow_public_access_points>
                 <lighter_penalties>1</lighter_penalties>
+                <update_order_status>0</update_order_status>
                 <cancel_threshold>85</cancel_threshold>
-                <cancel_update_order_status>0</cancel_update_order_status>
                 <review_threshold>75</review_threshold>
-                <review_update_order_status>0</review_update_order_status>
             </transom_ip_quality_score>
         </trust_and_safety>
     </default>

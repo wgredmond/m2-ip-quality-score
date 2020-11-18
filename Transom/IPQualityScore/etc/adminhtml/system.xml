@@ -29,14 +29,13 @@
                         </depends>
                     </field>
 
-                    <field id="key" translate="label comment" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="key" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Key</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/api_key</config_path>
                         <comment><![CDATA[IP Quality Scores access key]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
                         </depends>
-                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     </field>
 
                     <field id="plan_type" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -91,25 +90,25 @@
                 </group>
                 <group id="order_status_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Order Status</label>
-                    <comment><![CDATA[Set fraud thresholds and enable order status updates.]]></comment>
+                    <comment><![CDATA[IPQS returns two fraud scores: IP fraud score and transaction risk score.  Order status updates are based on the transaction risk score.  In this section you can set thresholds for transaction risk score, and enable or disable urder status updates. ]]></comment>
 
-                    <field id="cancelThreshold" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Cancel Thrshold</label>
-                        <config_path>trust_and_safety/transom_ip_quality_score/cancel_threshold</config_path>
-                        <validate>validate-number-range number-range-0-100</validate>
-                        <comment><![CDATA[Threshold for orders that are fraudulent, a number between 0 and 100.]]></comment>
+                    <field id="updateOrderStatus" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Update Order Status</label>
+                        <config_path>trust_and_safety/transom_ip_quality_score/update_order_status</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                        <comment><![CDATA[Automatically update order status based on IPQS score.  When Update Order Status is disabled we will still add a note to the order with the IPQS scores.]]></comment>
                         <depends>
-                            <field id="api_enabled">1</field>
+                            <field id="trust_and_safety/transom_ip_quality_score/api_config/api_enabled">1</field>
                         </depends>
                     </field>
 
-                    <field id="cancelUpdateOrderStatus" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Update Order Status Based on Cancel Threshold</label>
-                        <config_path>trust_and_safety/transom_ip_quality_score/cancel_update_order_status</config_path>
-                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                        <comment><![CDATA[Automatically update order status to Canel when frraud score exceeds cancel threshold.]]></comment>
+                    <field id="cancelThreshold" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Cancel Thrshold</label>
+                        <config_path>trust_and_safety/transom_ip_quality_score/cancel_threshold</config_path>
+                        <validate>validate-number-range number-range-0-100</validate>
+                        <comment><![CDATA[Transaction risk score threshold for orders that are fraudulent and will be canceled.  The threshold is a number between 0 and 100.]]></comment>
                         <depends>
-                            <field id="api_enabled">1</field>
+                            <field id="trust_and_safety/transom_ip_quality_score/api_config/api_enabled">1</field>
                         </depends>
                     </field>
 
@@ -117,21 +116,12 @@
                         <label>Review Threshold</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/review_threshold</config_path>
                         <validate>validate-number-range number-range-0-100</validate>
-                        <comment><![CDATA[Threshold for orders that are suspicious, but not necessarily fraudulent.]]></comment>
+                        <comment><![CDATA[Transaction risk score threshold for orders that are may be fraudulent and will be reviewed.  The threshold is a number between 0 and 100.]]></comment>
                         <depends>
-                            <field id="api_enabled">1</field>
+                            <field id="trust_and_safety/transom_ip_quality_score/api_config/api_enabled">1</field>
                         </depends>
                     </field>
 
-                    <field id="reviewUpdateOrderStatus" translate="label comment" sortOrder="40" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Update Order Status Based on Review Threshold</label>
-                        <config_path>trust_and_safety/transom_ip_quality_score/review_update_order_status</config_path>
-                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                        <comment><![CDATA[Automatically update order status to Suspected Fraud when frraud score exceeds review threshold, a number between 0 and 100.]]></comment>
-                        <depends>
-                            <field id="api_enabled">1</field>
-                        </depends>
-                    </field>
                 </group>
             </group>
         </section>

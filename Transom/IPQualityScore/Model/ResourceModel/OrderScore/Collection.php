@@ -1,5 +1,5 @@
 <?php
-namespace Transom\IPQualityScore\Model\ResourceModel\IpqsApiRequest;
+namespace Transom\IPQualityScore\Model\ResourceModel\OrderScore;
 
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {

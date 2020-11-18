@@ -155,6 +155,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         $result = $this->sendRequest($parameters, $ipAddress);
 
         // Check to see if our query was successful.
+        $this->logger->info(' ### In sendLogin(); checking success: ' . $result[self::IPQS_PARAM_SUCCESS]);
         if(isset($result[self::IPQS_PARAM_SUCCESS]) && $result[self::IPQS_PARAM_SUCCESS] === true) {
             $this->saveRequest($parameters, $ipAddress, $result, self::IPQS_REQUEST_LOGIN, $customer->getId(), $customer->getEmail());
         }
@@ -183,7 +184,11 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         );
 
         // populate order and payment variables
-        $orderId = $order->getIncrementId();
+        $orderId = $order->getId();
+        $orderIncrementId = $order->getIncrementId();
+        $this->logger->info(' ### In sendTransaction(); order incrementId = ' . $orderId);
+        $this->logger->info(' ### In sendTransaction(); order entityId = ' . $order->getEntityId());
+        $this->logger->info(' ### In sendTransaction(); order id = ' . $order->getId());
         $orderAmount = $order->getGrandTotal();
 
         // populate cc variables
@@ -268,8 +273,10 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         // Check to see if the request was successful.
         if(isset($result[self::IPQS_PARAM_SUCCESS]) && $result[self::IPQS_PARAM_SUCCESS] === true) {
             $this->saveRequest($parameters, $ipAddress, $result, self::IPQS_REQUEST_TRANSACTION, $customerId, $customerEmail);
-            $this->saveOrderScore($result, $orderId);
-            $this->orderManager->updateOrderStatus($result[self::IPQS_PARAM_FRAUD_SCORE], $result[self::IPQS_PARAM_TRANSACTION_DETAILS][self::IPQS_PARAM_RISK_SCORE], $order);
+            $this->orderManager->updateOrderStatus($result, $order);
+            $riskScore = $result[self::IPQS_PARAM_TRANSACTION_DETAILS][self::IPQS_PARAM_RISK_SCORE];
+            $this->logger->info(' ### In sendTransaction(); riskScore = ' . $riskScore);
+            $order->getExtensionAttributes()->setRiskScore($riskScore);
         }
     }
 
@@ -289,6 +296,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
 
         // get credentials, call IP quality score
         $apiKey = $this->config->getApiKey();
+            $this->logger->info(' ### In sendRequest(); apiKey: ' .  $apiKey);
         $endpointUrl = $this->config->getApiEndPoint();
         $formattedParameters = http_build_query($parameters);
         $url = sprintf(
@@ -326,9 +334,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      */
     protected function saveRequest($parameters, $ipAddress, $result, $type, $customerId, $customerEmail) {
 
-        $fraudScore = $result[self::IPQS_PARAM_FRAUD_SCORE];
-        $botStatus = $result[self::IPQS_PARAM_BOT_STATUS];
-
         $request = array(
             'sent' => date('Y-m-d H:i:s'),
             'type' => $type,
@@ -342,8 +347,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
         try {
             $ipqsInterface = $this->ipqsApiRequestFactory->create();
             $ipqsInterface->setData('type', $type);
-            $ipqsInterface->setData('fraud_score', $fraudScore);
-            $ipqsInterface->setData('bot_status', $botStatus);
             $ipqsInterface->setData('data', json_encode($data));
             $this->ipqsApiRequestResource->save($ipqsInterface);
         } catch (\Exception $e) {
@@ -356,17 +359,14 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @param $result
      * @param $orderId
      */
-    protected function saveOrderScore($result, $orderId) {
-        $fraudScore = $result[self::IPQS_PARAM_FRAUD_SCORE];
-        $riskScore = $result[self::IPQS_PARAM_TRANSACTION_DETAILS][self::IPQS_PARAM_RISK_SCORE];
-        $botStatus = $result[self::IPQS_PARAM_BOT_STATUS];
+    public function saveOrderScore($orderId, $riskScore) {
+        $this->logger->info(' ### In saveOrderScore(); orderId = ' . $orderId);
+        $this->logger->info(' ### In saveOrderScore(); riskScore = ' . $riskScore);
 
         try {
             $orderScoreInterface = $this->orderScoreFactory->create();
             $orderScoreInterface->setData('order_id', $orderId);
-            $orderScoreInterface->setData('fraud_score', $fraudScore);
             $orderScoreInterface->setData('risk_score', $riskScore);
-            $orderScoreInterface->setData('bot_status', $botStatus);
             $this->orderScoreResource->save($orderScoreInterface);
         } catch (\Exception $e) {
             $this->logger->info('Exception saving IPQS score: ' . $e->getMessage());

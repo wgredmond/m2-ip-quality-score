@@ -6,13 +6,9 @@
         <observer name="transom_ip_quality_score_payment_place_end_event"
                   instance="Transom\IPQualityScore\Observer\Events\CreateOrderEvent"/>
     </event>
-    <event name="sales_order_place_before">
-        <observer name="transom_aws_fraud_detector_create_order_event"
-                  instance="Transom\IPQualityScore\Observer\Events\CreateOrderEvent"/>
-    </event>
-    <event name="sales_order_payment_place_start">
+
+    <event name="sales_order_save_after">
         <observer name="transom_aws_fraud_detector_payment_place_start_event"
                   instance="Transom\IPQualityScore\Observer\Events\CreateOrderEvent"/>
     </event>
-
 </config>
