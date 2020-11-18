@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 use Transom\IPQualityScore\Helper\Api;
 use Transom\IPQualityScore\Model\ConfigSettings;
 
-class AccountLoginEvent implements ObserverInterface
+class CreateAccountObserver implements ObserverInterface
 {
 
     /**
@@ -35,7 +35,7 @@ class AccountLoginEvent implements ObserverInterface
 
 
     /**
-     * AccountLoginEvent constructor.
+     * CreateAccountObserver constructor.
      * @param LoggerInterface $logger
      * @param ConfigSettings $config
      * @param Api $api
@@ -49,6 +49,7 @@ class AccountLoginEvent implements ObserverInterface
         $this->api = $api;
     }
 
+
     /**
      * @param \Magento\Framework\Event\Observer $observer
      * @return $this
@@ -60,6 +61,7 @@ class AccountLoginEvent implements ObserverInterface
             return $this;
         }
 
+        $this->logger->info('##### In Transom IPQualityScore ##### CreateAccountObserver');
         $this->api->sendLogin($observer->getEvent()->getCustomer());
     }
 }

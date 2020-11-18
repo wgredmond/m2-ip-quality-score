@@ -16,7 +16,7 @@ use Transom\IPQualityScore\Helper\Api;
 use Transom\IPQualityScore\Model\ConfigSettings;
 
 
-class CreateOrderEvent implements ObserverInterface
+class OrderObserver implements ObserverInterface
 {
 
     /**
@@ -36,7 +36,7 @@ class CreateOrderEvent implements ObserverInterface
 
 
     /**
-     * CreateAccountEvent constructor.
+     * CreateAccountObserver constructor.
      * @param LoggerInterface $logger
      * @param ConfigSettings $config
      * @param Api $api
@@ -58,12 +58,12 @@ class CreateOrderEvent implements ObserverInterface
     {
         $localDebug = true;
         if ($localDebug) {
-            $this->logger->info(' CreateOrderEvent BEGIN [' . microtime() . ']');
+            $this->logger->info(' OrderObserver BEGIN [' . microtime() . ']');
         }
         // only process order if this service is enable
         if (!$this->config->isApiActive()) {
             if ($localDebug) {
-                $this->logger->info(' CreateOrderEvent END [' . microtime() . ']');
+                $this->logger->info(' OrderObserver END [' . microtime() . ']');
             }
             return $this;
         }
@@ -96,9 +96,9 @@ class CreateOrderEvent implements ObserverInterface
         }
 
         //Warning: get_class() expects parameter 1 to be object,
-        // array given in /var/www/vhosts/dev.m2.local.com/app/code/Transom/IPQualityScore/Observer/Events/CreateOrderEvent.php on line 119
+        // array given in /var/www/vhosts/dev.m2.local.com/app/code/Transom/IPQualityScore/Observer/Events/OrderObserver.php on line 119
 
-        // Recoverable Error: Object of class Magento\Sales\Api\Data\OrderExtension could not be converted to string in /var/www/vhosts/dev.m2.local.com/app/code/Transom/IPQualityScore/Observer/Events/CreateOrderEvent.php on line 99
+        // Recoverable Error: Object of class Magento\Sales\Api\Data\OrderExtension could not be converted to string in /var/www/vhosts/dev.m2.local.com/app/code/Transom/IPQualityScore/Observer/Events/OrderObserver.php on line 99
 
         // TODO - start debug - order
         if ($localDebug) {
@@ -188,7 +188,7 @@ class CreateOrderEvent implements ObserverInterface
         }
 
         if ($localDebug) {
-            $this->logger->info(' CreateOrderEvent END [' . microtime() . ']');
+            $this->logger->info(' OrderObserver END [' . microtime() . ']');
         }
     }
 
