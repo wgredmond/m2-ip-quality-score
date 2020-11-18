@@ -3,8 +3,6 @@
         "column": {
             "ipqs_api_request_id": true,
             "type": true,
-            "fraud_score": true,
-            "bot_status": true,
             "data": true,
             "updated": true
         },
@@ -15,13 +13,13 @@
     "ipqs_order_score": {
         "column": {
             "ipqs_order_score_id": true,
-            "fraud_score": true,
+            "order_id": true,
             "risk_score": true,
-            "bot_status": true,
             "updated": true
         },
         "constraint": {
-            "PRIMARY": true
+            "PRIMARY": true,
+            "IPQS_ORDER_SCORE_ORDER_ID_SALES_ORDER_ENTITY_ID": true
         }
     }
 }
