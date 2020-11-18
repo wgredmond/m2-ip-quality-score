@@ -296,7 +296,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
 
         // get credentials, call IP quality score
         $apiKey = $this->config->getApiKey();
-            $this->logger->info(' ### In sendRequest(); apiKey: ' .  $apiKey);
         $endpointUrl = $this->config->getApiEndPoint();
         $formattedParameters = http_build_query($parameters);
         $url = sprintf(
