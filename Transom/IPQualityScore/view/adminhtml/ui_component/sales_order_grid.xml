@@ -1,26 +1,19 @@
+a<?xml version="1.0" encoding="UTF-8"?>
 <listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
     <columns name="sales_order_columns">
-        <column name="ipqs_request">
+        <column name="risk_score">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">IPQS Request</item>
+                    <item name="label" xsi:type="string" translate="true">IPQS Risk Score</item>
                 </item>
             </argument>
         </column>
-        <column name="ipqs_response">
+        <column name="risk_decision">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">IPQS Response</item>
-                </item>
-            </argument>
-        </column>
-        <column name="ipqs_fraud_score">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">IPQS Fraud Score</item>
+                    <item name="label" xsi:type="string" translate="true">IPQS Risk Decision</item>
                 </item>
             </argument>
         </column>

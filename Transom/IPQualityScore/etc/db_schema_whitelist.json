@@ -15,6 +15,7 @@
             "ipqs_order_score_id": true,
             "order_id": true,
             "risk_score": true,
+            "risk_decision": true,
             "updated": true
         },
         "constraint": {

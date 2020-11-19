@@ -184,7 +184,7 @@ class OrderObserver implements ObserverInterface
 
         if ($eventName === 'sales_order_save_after') {
             $extAttribs = $order->getExtensionAttributes();
-            $this->api->saveOrderScore($order->getId(), $extAttribs->getRiskScore());
+            $this->api->saveOrderScore($order->getId(), $extAttribs->getIpqsRiskScore(), $extAttribs->getIpqsRiskDecision());
         }
 
         if ($localDebug) {

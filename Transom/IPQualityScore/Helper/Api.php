@@ -276,7 +276,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
             $this->orderManager->updateOrderStatus($result, $order);
             $riskScore = $result[self::IPQS_PARAM_TRANSACTION_DETAILS][self::IPQS_PARAM_RISK_SCORE];
             $this->logger->info(' ### In sendTransaction(); riskScore = ' . $riskScore);
-            $order->getExtensionAttributes()->setRiskScore($riskScore);
+            $order->getExtensionAttributes()->setIpqsRiskScore($riskScore);
         }
     }
 
@@ -358,14 +358,16 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper {
      * @param $result
      * @param $orderId
      */
-    public function saveOrderScore($orderId, $riskScore) {
+    public function saveOrderScore($orderId, $riskScore, $riskDecision) {
         $this->logger->info(' ### In saveOrderScore(); orderId = ' . $orderId);
         $this->logger->info(' ### In saveOrderScore(); riskScore = ' . $riskScore);
+        $this->logger->info(' ### In saveOrderScore(); riskDecision = ' . $riskDecision);
 
         try {
             $orderScoreInterface = $this->orderScoreFactory->create();
             $orderScoreInterface->setData('order_id', $orderId);
             $orderScoreInterface->setData('risk_score', $riskScore);
+            $orderScoreInterface->setData('risk_decision', $riskDecision);
             $this->orderScoreResource->save($orderScoreInterface);
         } catch (\Exception $e) {
             $this->logger->info('Exception saving IPQS score: ' . $e->getMessage());

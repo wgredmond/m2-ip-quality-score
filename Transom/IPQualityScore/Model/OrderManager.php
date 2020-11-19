@@ -41,6 +41,8 @@ class OrderManager {
         $riskScore = $result['transaction_details']['risk_score'];
         $this->logger->info(' ### In updateOrderStatus(); fraudScore = ' . $fraudScore . '; riskScore = ' . $riskScore);
 
+        $outcome = 'legit';
+        $riskDecision = "Order is legit.";
         if ($riskScore > $this->config->getCancelThreshold()) {
             $outcome = 'cancel_order';
         } else if ($riskScore > $this->config->getReviewThreshold()) {
@@ -58,19 +60,24 @@ class OrderManager {
                     $order->setState(Order::STATE_HOLDED);
                     $order->setStatus(Order::STATUS_FRAUD);
                     $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and order state to on hold - order should be reviewed.  Transaction risk score: ' . $riskScore . '.  Review Threshold = ' . $this->config->getReviewThreshold() . '; Cancel Threshold = ' . $this->config->getCancelThreshold() . '.  IPQS fraud score: ' . $fraudScore . '; ', false);
+                    $riskDecision = "Order should be reviewed.";
                 } else {
-                    $order->addStatusToHistory($order->getStatus(), '[Update Order Status is disabled]  This order would have been placed in review state. Transaction risk score: ' . $riskScore . '.  Review Threshold = ' . $this->config->getReviewThreshold() . '; Cancel Threshold = ' . $this->config->getCancelThreshold() . '.  IPQS fraud score: ' . $fraudScore . '; ', false);
+                    $order->addStatusToHistory($order->getStatus(), '[Update Order Status is disabled] This order would have been placed in review state. Transaction risk score: ' . $riskScore . '.  Review Threshold = ' . $this->config->getReviewThreshold() . '; Cancel Threshold = ' . $this->config->getCancelThreshold() . '.  IPQS fraud score: ' . $fraudScore . '; ', false);
+                    $riskDecision = "[Update Order Status is disabled] Order should be reviewed.";
                 }
             } else if ($outcome == 'cancel_order') {
                 if ($this->config->isUpdateOrderStatus()) {
                     $order->setState(Order::STATE_CANCELED);
                     $order->setStatus(Order::STATUS_FRAUD);
                     $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and order state cancel.  Transaction risk score: ' . $riskScore . '.  Review Threshold = ' . $this->config->getReviewThreshold() . '; Cancel Threshold = ' . $this->config->getCancelThreshold() . '.  IPQS fraud score: ' . $fraudScore . '; ', false);
+                    $riskDecision = "Order canceled.";
                 } else {
-                    $order->addStatusToHistory($order->getStatus(), '[Update Order Status is disabled]  This order has been identified as a fraudulent order and would have been canceled. Transaction risk score: ' . $riskScore . '.  Review Threshold = ' . $this->config->getReviewThreshold() . '; Cancel Threshold = ' . $this->config->getCancelThreshold() . '.  IPQS fraud score: ' . $fraudScore . '; ', false);
+                    $order->addStatusToHistory($order->getStatus(), '[Update Order Status is disabled] This order has been identified as a fraudulent order and would have been canceled. Transaction risk score: ' . $riskScore . '.  Review Threshold = ' . $this->config->getReviewThreshold() . '; Cancel Threshold = ' . $this->config->getCancelThreshold() . '.  IPQS fraud score: ' . $fraudScore . '; ', false);
+                    $riskDecision = "[Update Order Status is disabled] Order would have been canceled.";
                 }
             }
 
+            $order->getExtensionAttributes()->setIpqsRiskDecision($riskDecision);
         } catch (\Throwable $exception) {
             $this->logger->critical('Exception in updateOrderStatus -- ' . $exception->getMessage());
             // let order complete

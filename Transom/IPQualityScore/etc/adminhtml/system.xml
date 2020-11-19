@@ -32,7 +32,7 @@
                     <field id="key" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Key</label>
                         <config_path>trust_and_safety/transom_ip_quality_score/api_key</config_path>
-                        <comment><![CDATA[IP Quality Scores access key]]></comment>
+                        <comment><![CDATA[IP Quality Score access key]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
                         </depends>
